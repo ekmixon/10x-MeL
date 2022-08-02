@@ -73,9 +73,7 @@ class Session:
         )
 
         user = self.user_handler.default_user
-        dataset_id = self.user_handler.get_last_dataset_id(user.id)
-
-        if dataset_id:
+        if dataset_id := self.user_handler.get_last_dataset_id(user.id):
             data_view_id = self.data_view_history_handler.get(user.id, dataset_id)
         else:
             data_view_id = None
@@ -146,8 +144,7 @@ class Session:
 
         if self.data_view_history_handler.has(user_id, dataset_id):
             data_view_id = self.data_view_history_handler.get(user_id, dataset_id)
-            data_view = self.data_view_handler.by_id(data_view_id)
-            if data_view:
+            if data_view := self.data_view_handler.by_id(data_view_id):
                 return data_view
 
         return self.create_data_view(
@@ -223,10 +220,11 @@ class Session:
 
         tag_map = self.tag_handler.get(data_view.dataset_id)
 
-        if not tag_map:
-            return {key: [] for key in primary_keys}
-
-        return {key: list(tag_map.get_tags_by_key(key)) for key in primary_keys}
+        return (
+            {key: list(tag_map.get_tags_by_key(key)) for key in primary_keys}
+            if tag_map
+            else {key: [] for key in primary_keys}
+        )
 
     def count_uniques(self, column_name: str, data_view_id: DataViewId) -> QueryResponse:
         data_view = self.rich_data_view(data_view_id)
@@ -304,8 +302,7 @@ class Session:
             sort_asc=sort_asc,
         )
 
-        tag_map = self.tag_handler.get(data_view.dataset_id)
-        if tag_map:
+        if tag_map := self.tag_handler.get(data_view.dataset_id):
             primary_key_name = tag_map.primary_key_name
             get_tags_by_key = tag_map.get_tags_by_key
 

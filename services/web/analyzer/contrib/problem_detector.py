@@ -79,9 +79,7 @@ class BaseTwoPassSurfacePatternDetector:
     def _should_ignore(self, text: str, ratings: List[int]) -> bool:
         if min(ratings) < 0 or max(ratings) < 1:
             return False
-        if self.pattern_phase1.search(text):
-            return False
-        return True
+        return not self.pattern_phase1.search(text)
 
     def _process_ratings(self, series: Series) -> List[int]:
         values = []
@@ -133,7 +131,7 @@ class ResponseMapper:
 
     @classmethod
     def _raw_range(cls, responses: List[str]) -> Dict[str, int]:
-        midpoint = int(len(responses) / 2)
+        midpoint = len(responses) // 2
         return {
             response: i - midpoint for i, response in enumerate(responses)
         }
@@ -149,7 +147,7 @@ class ResponseMapper:
         """map integers less than 0 to -1, greater than 0 to 1, and anything else to 0"""
         if not value:
             return 0
-        return 1 if int(value) > 0 else -1
+        return 1 if value > 0 else -1
 
     def get_maps(
         self, responses_by_column_label: Dict[str, List[str]],
@@ -263,9 +261,10 @@ class ProblemReportDetector(BaseTwoPassSurfacePatternDetector):
         for terms in [self.PHASE1_TERMS, self.PHASE2_TERMS]:
             unioned_terms = r"{prefix}({terms}){suffix}".format(
                 prefix=self.PREFIX_PREVENTION,
-                terms="|".join(term for term in terms),
+                terms="|".join(terms),
                 suffix=self.SUFFIX_PREVENTION,
             )
+
 
             patterns.append(re.compile(unioned_terms))
         return patterns

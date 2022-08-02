@@ -762,7 +762,7 @@ def debug_display_phases_by_type(phases_by_type, transcript, phase_types_to_disp
             if len(line) + len(token) >= WIDTH:
                 pretty_text.append(line)
                 line = ''
-            line += ' ' + token
+            line += f' {token}'
         pretty_text.append(line)
         return "\n".join(pretty_text)
 

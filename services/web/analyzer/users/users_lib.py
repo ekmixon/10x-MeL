@@ -93,12 +93,7 @@ class UserHandler(SerializableHandler):
         self._by_id[user.id] = user
 
     def find(self, name: Optional[str] = None) -> List[User]:
-        users = []
-        for user in self._users:
-            if name and name not in user.name:
-                continue
-            users.append(user)
-        return users
+        return [user for user in self._users if not name or name in user.name]
 
     def by_id(self, user_id: UserId) -> Optional[User]:
         return self._by_id.get(user_id)

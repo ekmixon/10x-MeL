@@ -84,9 +84,7 @@ class TextProcessor:
         self.tag_ignore = {tag_personal_pronoun, tag_possessive}
 
     def is_oov(self, word: str) -> bool:
-        if word not in self.parser.vocab and not self.parser.vocab.has_vector(word):
-            return True
-        return False
+        return word not in self.parser.vocab and not self.parser.vocab.has_vector(word)
 
     @staticmethod
     def get_bigrams(words: List[str]) -> List[str]:
@@ -213,7 +211,7 @@ class Corpus:
         corpus = cls(text_processor)
 
         start_time = time()
-        log.info(f"processing rows...")
+        log.info("processing rows...")
         index = 0
         for _, row in df.iterrows():
             text = row[text_column_name].strip()
@@ -308,12 +306,10 @@ class CorpusProcessor:
 
         category_tree = self._build_initial_category_tree(token_counts)
 
-        merged_category_tree = self._merge_lower_rank_categories(
+        return self._merge_lower_rank_categories(
             category_tree=category_tree,
             token_counts=token_counts,
         )
-
-        return merged_category_tree
 
     def _get_time_weighted_counts(
         self,
@@ -366,11 +362,9 @@ class CorpusProcessor:
         token_counts = Counter()
         for token, token_entries in self._token_entry_lookup.items():
             # TODO: Replace with regex
-            if any(exclude_word in token for exclude_word in exclude_words):
-                continue
-
-            # count only the relevant entries
-            token_counts[token] += len([entry for entry in token_entries if is_relevant(entry)])
+            if all(exclude_word not in token for exclude_word in exclude_words):
+                # count only the relevant entries
+                token_counts[token] += len([entry for entry in token_entries if is_relevant(entry)])
 
         return token_counts
 
@@ -417,9 +411,7 @@ class CorpusProcessor:
         subcategories_top_n = 100
 
         def filter_token(t):
-            if len(t) < filter_len_min:
-                return True
-            return False
+            return len(t) < filter_len_min
 
         # get top N most commonly occurring tokens
         tokens = set(chain.from_iterable(
@@ -461,9 +453,13 @@ class CorpusProcessor:
         self.debug_counts_by_category = counts_by_category
 
         counts_and_categories = sorted(
-            [(counts_by_category[category], category) for category in category_tree.keys()],
-            reverse=True
+            [
+                (counts_by_category[category], category)
+                for category in category_tree
+            ],
+            reverse=True,
         )
+
 
         pruned_category_tree = {
             cat: category_tree[cat] for _, cat in counts_and_categories[:num_categories]
@@ -633,13 +629,11 @@ class CorpusProcessor:
 
         assignments = []
         for category in category_tree:
-            result = self._get_best_category_for_text(category, text)
-            if result:
+            if result := self._get_best_category_for_text(category, text):
                 assignments.extend(result)
 
-        if not assignments:
-            result = self._get_best_language_model_for_text(text)
-            if result:
+        if result := self._get_best_language_model_for_text(text):
+            if not assignments:
                 assignments.extend(result)
         return assignments
 
@@ -647,17 +641,15 @@ class CorpusProcessor:
         if entry_id not in self.text_by_id:
             return [self.DEFAULT_PAIR]
         entry_text = self.text_by_id[entry_id].strip()
-        if not entry_text:
-            return [self.DEFAULT_PAIR]
-
-        return self.categorize_text(entry_text)
+        return self.categorize_text(entry_text) if entry_text else [self.DEFAULT_PAIR]
 
     def categorize_by_pkey(self, pkey: str) -> List[Tuple[str, str]]:
         entry_id = self._id_by_pkey.get(pkey, None)
-        if not entry_id:
-            return [self.DEFAULT_PAIR]
-
-        return self.categorize_by_entry_id(entry_id)
+        return (
+            self.categorize_by_entry_id(entry_id)
+            if entry_id
+            else [self.DEFAULT_PAIR]
+        )
 
 
 class AutoCatHandler:

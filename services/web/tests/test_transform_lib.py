@@ -63,7 +63,7 @@ class TestTransforms:
             transform = transform_cls(key=data0[0], value=data0[1])
 
             assert transform.key == data0[0]
-            assert transform.key != data0[0] + "x"
+            assert transform.key != f"{data0[0]}x"
             assert transform.value == data0[1]
             assert transform.value != []
 
@@ -73,7 +73,7 @@ class TestTransforms:
             transform = transform_cls(key=data1[0], values=data1[1])
 
             assert transform.key == data1[0]
-            assert transform.key != data1[0] + "x"
+            assert transform.key != f"{data1[0]}x"
             assert transform.values == data1[1]
             assert transform.values != []
 
@@ -83,7 +83,7 @@ class TestTransforms:
         match_any1 = MatchAny.deserialize(match_any0.serialize())
 
         assert match_any1.key == data1[0]
-        assert match_any1.key != data1[0] + "x"
+        assert match_any1.key != f"{data1[0]}x"
         assert match_any1.values == data1[1]
         assert match_any1.values != []
 
@@ -114,7 +114,6 @@ def test_comparison():
     assert tx3 != tx6
 
     assert tx4 != tx3
-    assert tx4 == tx4
     assert tx4 != tx5
     assert tx4 == tx6
     assert tx5 == tx5

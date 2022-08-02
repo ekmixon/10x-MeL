@@ -25,7 +25,7 @@ class HistoryKey(tuple, Serializable):
     SEPARATOR = "_"
 
     def __new__(cls, user_id: UserId, dataset_id: DatasetId) -> HistoryKey:
-        return tuple.__new__(HistoryKey, tuple((user_id, dataset_id)))
+        return tuple.__new__(HistoryKey, (user_id, dataset_id))
 
     @property
     def user_id(self) -> UserId:
@@ -44,7 +44,7 @@ class HistoryKey(tuple, Serializable):
         return HistoryKey(user_id=user_id, dataset_id=dataset_id)
 
     def __repr__(self) -> str:
-        return "<User:%s Dataset:%s>" % (self.user_id, self.dataset_id)
+        return f"<User:{self.user_id} Dataset:{self.dataset_id}>"
 
 
 HistoryLookup = Dict[HistoryKey, DataViewId]
@@ -352,8 +352,9 @@ class DataViewHandler(SerializableHandler):
             updated_transforms,
         )
 
-        existing_id = self._data_view_id_by_serialization.get(serialization, None)
-        if existing_id:
+        if existing_id := self._data_view_id_by_serialization.get(
+            serialization, None
+        ):
             log.info(f"using cached DataView {existing_id}")
             return self.by_id(existing_id)
 

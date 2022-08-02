@@ -105,7 +105,7 @@ class QueryParser:
             args = d.get(cls.KEY_ARGS, {})
 
             if class_name is None:
-                log.error("Transform has no class name - skipping: {}".format(d))
+                log.error(f"Transform has no class name - skipping: {d}")
                 continue
 
             transform_cls = transform_manager.transform_by_name(class_name)

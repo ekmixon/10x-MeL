@@ -24,13 +24,11 @@ class DatasetHandler(SerializableHandler):
 
     def find(self, string: Optional[str] = None) -> List[Dataset]:
         string = string or ""
-        datasets = []
-        for dataset in self._datasets:
-            if string in dataset.name:
-                datasets.append(dataset)
-            elif string in dataset.filename:
-                datasets.append(dataset)
-        return datasets
+        return [
+            dataset
+            for dataset in self._datasets
+            if string in dataset.name or string in dataset.filename
+        ]
 
     def serialize(self) -> List:
         return [dataset.serialize() for dataset in self._datasets]

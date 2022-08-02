@@ -31,7 +31,6 @@ def test_comparison():
     assert tx3 != tx5
 
     assert tx4 != tx3
-    assert tx4 == tx4
     assert tx5 == tx5
     
     
@@ -45,8 +44,6 @@ def test_set_comparison():
         ]
     )
 
-    assert {transforms[0]} == {transforms[0]}
-    assert {transforms[0], transforms[2]} == {transforms[0], transforms[2]}
     assert {transforms[0], transforms[2]} == {transforms[1], transforms[2]}
     assert {transforms[0], transforms[1]} == {transforms[0]}
     assert {transforms[0], transforms[2]} != {transforms[0], transforms[3]}

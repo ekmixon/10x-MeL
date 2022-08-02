@@ -61,8 +61,8 @@ class BijectiveMap:
         left_to_right = {}
         right_to_left = {}
         for left, right in zip(u, v):
-            assert left not in left_to_right, "Not a bijection: {}".format(left)
-            assert right not in right_to_left, "Not a bijection: {}".format(right)
+            assert left not in left_to_right, f"Not a bijection: {left}"
+            assert right not in right_to_left, f"Not a bijection: {right}"
             left_to_right[left] = right
             right_to_left[right] = left
 

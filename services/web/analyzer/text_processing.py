@@ -47,11 +47,7 @@ class CalendarUtils:
                 unless it's a multiple of 400 (2000, 2400, 2800 are leap years)
         """
         if year % 4 == 0:
-            if year % 100 == 0:
-                if year % 400 == 0:
-                    return True
-                return False
-            return True
+            return year % 400 == 0 if year % 100 == 0 else True
         return False
 
     def days_in_year(self, year):
@@ -109,7 +105,7 @@ class WordHistoryProcessor:
         df = self.df
 
         nonce = str(int(time()))
-        dt_column_key = "date_time_column" + nonce
+        dt_column_key = f"date_time_column{nonce}"
         self.derived_date_time_column_key = dt_column_key
 
         '''
@@ -212,8 +208,10 @@ class WordHistoryProcessor:
         year, day_of_year = day_index
         min_year = self._min_day_index[0]
         day_count = sum(
-            [self.calendar_utils.days_in_year(year) for year in range(min_year, year + 1)]
+            self.calendar_utils.days_in_year(year)
+            for year in range(min_year, year + 1)
         )
+
         return day_count + day_of_year
 
 
@@ -242,10 +240,9 @@ def tokenize(text: str, min_word_length: int) -> List[str]:
 
         if token.isupper() and (3 <= len(token) < 5):
             continue
-        else:
-            if len(token) < min_word_length or len(token) > max_word_length:
-                continue
-            token = token.lower()
+        if len(token) < min_word_length or len(token) > max_word_length:
+            continue
+        token = token.lower()
 
         results.append(token)
     return results

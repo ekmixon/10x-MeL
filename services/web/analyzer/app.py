@@ -120,13 +120,13 @@ def most_recent_data_view() -> str:
     dataset_id_str = payload.get(key_dataset_id, None)
 
     try:
-        if not dataset_id_str:
-            data_view = session.get_most_recent_data_view(user_id=user_id)
-        else:
-            data_view = session.get_most_recent_data_view(
-                user_id=user_id,
-                dataset_id=DatasetId(dataset_id_str)
+        data_view = (
+            session.get_most_recent_data_view(
+                user_id=user_id, dataset_id=DatasetId(dataset_id_str)
             )
+            if dataset_id_str
+            else session.get_most_recent_data_view(user_id=user_id)
+        )
 
         return jsonify(dict(error=0, data_view=data_view.serialize()))
     except ValueError as exc:

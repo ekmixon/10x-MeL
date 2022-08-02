@@ -128,7 +128,7 @@ class TransformDef(Serializable):
             self.KEY_TYPE: self.type,
             self.KEY_DESC: self.description,
             self.KEY_PARAMETERS: [p.serialize() for p in self.parameters],
-            self.KEY_OPS: [op for op in self.operations],
+            self.KEY_OPS: list(self.operations),
         }
 
     @classmethod
@@ -137,7 +137,7 @@ class TransformDef(Serializable):
             transform_type=d[cls.KEY_TYPE],
             description=d[cls.KEY_DESC],
             parameters=[p.deserialize() for p in d[cls.KEY_PARAMETERS]],
-            operations=[op for op in d[cls.KEY_OPS]],
+            operations=list(d[cls.KEY_OPS]),
         )
 
 
@@ -283,10 +283,7 @@ class TransformList(Serializable, deque):
     def __eq__(self, other):
         if len(self) != len(other):
             return False
-        for elem, elem_other in zip(self, other):
-            if elem != elem_other:
-                return False
-        return True
+        return all(elem == elem_other for elem, elem_other in zip(self, other))
 
     def serialize(self) -> List[List[str]]:
         return [transform.serialize() for transform in self]
@@ -399,7 +396,7 @@ class ExactMatch(FilterTransform):
         return df[df[self.column_name].astype(str) == self.value]
 
     def __repr__(self) -> str:
-        return "{}:{}={}".format(self.type(), self.column_name, self.value)
+        return f"{self.type()}:{self.column_name}={self.value}"
 
     @staticmethod
     def type() -> str:
@@ -442,7 +439,7 @@ class MatchAny(FilterTransform):
         return df[df[self.column_name].isin(self.values)]
 
     def __repr__(self) -> str:
-        return "{}:{}={}".format(self.type(), self.column_name, self.values)
+        return f"{self.type()}:{self.column_name}={self.values}"
 
     @staticmethod
     def type() -> str:
@@ -483,7 +480,7 @@ class DoesNotMatch(FilterTransform):
         return df[df[self.column_name].astype(str) != self.value]
 
     def __repr__(self) -> str:
-        return "{}:{}={}".format(self.type(), self.column_name, self.value)
+        return f"{self.type()}:{self.column_name}={self.value}"
 
     @staticmethod
     def type() -> str:
@@ -524,7 +521,7 @@ class DoesNotMatchAny(FilterTransform):
         return df[~df[self.column_name].isin(self.values)]
 
     def __repr__(self) -> str:
-        return "{}:{}={}".format(self.type(), self.column_name, self.values)
+        return f"{self.type()}:{self.column_name}={self.values}"
 
     @staticmethod
     def type() -> str:
@@ -554,7 +551,7 @@ class DoesNotMatchAny(FilterTransform):
 class HasText(FilterTransform):
     def __init__(self, column_name: str, value: str, operation: str):
         self.column_name = column_name
-        self.value = str(value)
+        self.value = value
         super().__init__(operation)
 
     @property
@@ -565,7 +562,7 @@ class HasText(FilterTransform):
         return df[df[self.column_name].astype(str).str.lower().str.contains(self.value.lower())]
 
     def __repr__(self) -> str:
-        return "{}:{}={}".format(self.type(), self.column_name, self.value)
+        return f"{self.type()}:{self.column_name}={self.value}"
 
     @staticmethod
     def type() -> str:
@@ -595,7 +592,7 @@ class HasText(FilterTransform):
 class DoesNotHaveText(FilterTransform):
     def __init__(self, column_name: str, value: str, operation: str):
         self.column_name = column_name
-        self.value = str(value)
+        self.value = value
         super().__init__(operation)
 
     @property
@@ -606,7 +603,7 @@ class DoesNotHaveText(FilterTransform):
         return df[~df[self.column_name].astype(str).str.lower().str.contains(self.value.lower())]
 
     def __repr__(self) -> str:
-        return "{}:{}={}".format(self.type(), self.column_name, self.value)
+        return f"{self.type()}:{self.column_name}={self.value}"
 
     @staticmethod
     def type() -> str:
@@ -692,7 +689,7 @@ class MergeColumnText(EnrichmentTransform):
         return EnrichmentResult(labels=[new_column_label])
 
     def __repr__(self) -> str:
-        return "{}:{}".format(self.type(), COMMA.join(self.column_labels))
+        return f"{self.type()}:{COMMA.join(self.column_labels)}"
 
     @staticmethod
     def description() -> List[str]:
@@ -817,7 +814,7 @@ class ProblemReport(EnrichmentTransform):
 
     def __repr__(self):
         rating_columns = ",".join(sorted(self.rating_column_labels))
-        return "{}:{}:{}".format(self.type(), self.text_column_label, rating_columns)
+        return f"{self.type()}:{self.text_column_label}:{rating_columns}"
 
     def serialize(self) -> List[str]:
         return [self.type(), self.operation, self.text_column_label, self.rating_column_labels]
@@ -890,11 +887,11 @@ class Categorization(EnrichmentTransform):
             entry_ids = autocat_handler.pkeys_to_entry_ids(pkeys)
 
         start = time()
-        log.info(f"building model...")
+        log.info("building model...")
         corpus_processor = autocat_handler.build_model(entry_ids)
         log.info(f"building model completed in {time() - start:6.2f}")
 
-        log.info(f"applying...")
+        log.info("applying...")
         start = time()
         df[new_column_name] = df.T.apply(f)
         log.info(f"applying completed in {time() - start:6.2f}")
@@ -960,7 +957,7 @@ class Categorization(EnrichmentTransform):
 @register
 class HasTag(FilterTransform):
     def __init__(self, tag: str, operation: str):
-        self.tag = str(tag)
+        self.tag = tag
         super().__init__(operation)
 
     @property
@@ -978,7 +975,7 @@ class HasTag(FilterTransform):
         return df[df[primary_key_name].apply(has_tag)]
 
     def __repr__(self) -> str:
-        return "{}:{}".format(self.type(), self.tag)
+        return f"{self.type()}:{self.tag}"
 
     @staticmethod
     def type() -> str:
@@ -1102,10 +1099,7 @@ class ExtractNth(EnrichmentTransform):
     def enrich(self, df: DataFrame, resources: TransformResource = None) -> EnrichmentResult:
         new_column_label = self.new_column_label
         column_label = self.column_label
-        if self.position == -1:
-            index = -1
-        else:
-            index = self.position - 1
+        index = -1 if self.position == -1 else self.position - 1
         separator = self.separator
 
         '''
