@@ -21,7 +21,7 @@ markupsafe==1.1.1
 more-itertools==8.2.0
 murmurhash==1.0.2
 nltk==3.5
-numpy==1.18.2
+numpy==1.22.2
 packaging==20.3
 pandas==1.0.3
 pathspec==0.7.0
@@ -44,7 +44,7 @@ thinc==7.4.0
 toml==0.10.0
 tqdm==4.46.0
 typed-ast==1.4.1
-urllib3==1.25.9
+urllib3==1.26.5
 wasabi==0.6.0
 wcwidth==0.1.9
 werkzeug==1.0.0
